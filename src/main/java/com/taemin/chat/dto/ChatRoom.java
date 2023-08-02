@@ -11,15 +11,15 @@ import java.util.UUID;
 @Data
 public class ChatRoom {
     private String roomId; // 채팅방 아이디
-    private String roomName; // 채팅방 이름
-    private long userCount; // 채팅방 인원수
+    private String grantorId; // 양도자 아이디
+    private String assigneeId; // 양수자 아이디
+    private Integer roomDealId; // 매물글 아이디
 
-    private HashMap<String, String> userlist = new HashMap<>();
-
-    public ChatRoom create(String roomName) {
+    public ChatRoom create(ChatCreateRequestDto chatCreateRequestDto) {
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.roomId = UUID.randomUUID().toString();
-        chatRoom.roomName = roomName;
+        chatRoom.assigneeId = chatCreateRequestDto.getAssigneeId();
+        chatRoom.roomDealId = roomDealId;
 
         return chatRoom;
     }

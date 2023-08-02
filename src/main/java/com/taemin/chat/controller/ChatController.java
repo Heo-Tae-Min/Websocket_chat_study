@@ -1,6 +1,7 @@
 package com.taemin.chat.controller;
 
 import com.taemin.chat.dto.ChatDTO;
+import com.taemin.chat.dto.ChatEnterRequestDto;
 import com.taemin.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,17 +32,15 @@ public class ChatController {
     // MessageMapping을 통해 webSocket으로 들어오는 메시지를 발신 처리한다.
     // 이때 클라이언트에서는 /pub/chat/message로 요청하게 되고 이것을 controller가 받아서 처리한다.
     // 처리가 완료되면 /sub/chat/room/roomId로 메시지가 전송된다.
+    // userId, roomId,
     @MessageMapping("/chat/enterUser")
-    public void enterUser(@Payload ChatDTO chat, SimpMessageHeaderAccessor headerAccessor) {
-        // 채팅방 유저 + 1
-        service.plusUserCnt(chat.getRoomId());
-
-        // 채팅방에 유저 추가 및 UserUUID 반환
-        String userUUID = service.addUser(chat.getRoomId(), chat.getSender());
+    public void enterUser(@Payload ChatEnterRequestDto chatEnterRequestDto, SimpMessageHeaderAccessor headerAccessor) {
 
         // 반환 결과를 socket session에 userUUID로 저장
-        headerAccessor.getSessionAttributes().put("userUUID", userUUID);
-        headerAccessor.getSessionAttributes().put("roomId", chat.getRoomId());
+        headerAccessor.getSessionAttributes().put("userID", chatEnterRequestDto.getUserId());
+        headerAccessor.getSessionAttributes().put("roomId", chatEnterRequestDto.getRoomId());
+
+        ChatDTO chat = new ChatDTO();
 
         chat.setMessage(chat.getSender() + " 님 입장!!");
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
@@ -67,9 +66,6 @@ public class ChatController {
 
         log.info("headAccessor {}", headerAccessor);
 
-        // 채팅방 유저 -1
-        service.minusUserCnt(roomId);
-
         // 채팅방 유저 리스트에서 UUID 유저 닉네임 조회 및 리스트에서 유저 삭제
         String username = service.getUserName(roomId, userUUID);
         service.delUser(roomId, userUUID);
@@ -93,15 +89,5 @@ public class ChatController {
     @ResponseBody
     public ArrayList<String> userList(String roomId) {
         return service.getUserList(roomId);
-    }
-
-    // 채팅에 참여한 유저 닉네임 중복 확인
-    @GetMapping("/chat/duplicateName")
-    @ResponseBody
-    public String isDuplicateName(@RequestParam("roomId") String roomId, @RequestParam("username") String username) {
-        String userName = service.isDuplicateName(roomId, username);
-        log.info("동작 확인 {}", userName);
-
-        return userName;
     }
 }

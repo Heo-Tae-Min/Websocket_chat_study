@@ -8,7 +8,7 @@ group = 'com.taemin'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '17'
+	sourceCompatibility = '8'
 }
 
 configurations {
@@ -35,6 +35,9 @@ dependencies {
 
 	// gson
 	implementation 'com.google.code.gson:gson:2.9.0'
+
+	// validation
+	implementation("org.springframework.boot:spring-boot-starter-validation")
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

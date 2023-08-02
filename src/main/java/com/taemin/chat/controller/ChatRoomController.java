@@ -1,49 +1,54 @@
 package com.taemin.chat.controller;
 
+import com.taemin.chat.dto.ChatCreateRequestDto;
+import com.taemin.chat.dto.ChatCreateResponseDto;
 import com.taemin.chat.dto.ChatRoom;
+import com.taemin.chat.global.common.response.BaseResponse;
+import com.taemin.chat.global.common.response.ResponseService;
 import com.taemin.chat.service.ChatService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@Controller
+@RestController
 @Slf4j
 public class ChatRoomController {
     // ChatService Bean 가져오기
     @Autowired
     private ChatService chatService;
 
-    // 채팅 리스트 화면
-    // "/"로 요청이 들어오면 전체 채팅룸 리스트를 담아서 return
-    @GetMapping("/")
-    public String goChatRoom(Model model) {
-        model.addAttribute("list", chatService.findAllRoom());
-        log.info("Show all ChatList {}", chatService.findAllRoom());
-        return "roomlist";
-    }
+    @Autowired
+    private ResponseService responseService;
 
     // 채팅방 생성
-    // 채팅방 생성 후 다시 /로 return
+    // 채팅을 보내면 상대를 채팅방으로 초대
+    // 메시지 보내기 -> 방 생성 -> 방으로 이동
+    // 초대를 수락하면 -> 방 이동
     @PostMapping("/chat/createroom")
-    public String createRoom(@RequestParam String name, RedirectAttributes rttr) {
-        ChatRoom room = chatService.createChatRoom(name);
-        log.info("Create chat room {}", room);
-        rttr.addFlashAttribute("roomName", room);
-        return "redirect:/";
+    public BaseResponse<?> createRoom(@RequestBody ChatCreateRequestDto chatCreateRequestDto) {
+        // 방 존재 여부 체크
+        
+        // 방 생성
+        String roomId = chatService.createChatRoom(chatCreateRequestDto);
+        log.info("Create chat roomID {}", roomId);
+
+        ChatCreateResponseDto response = new ChatCreateResponseDto();
+        response.setRoomId(roomId);
+
+        return responseService.getSuccessResponse("create success", response);
     }
 
     // 채팅방 입장 화면
-    // 파라미터로 넘어오는 roomId를 확인 후 해당 roomId를 기주느올
-    // 채팅방을 찾아서 클라이언트를 chatroom으로 보낸다.
-    @GetMapping("/chat/room")
-    public String roomDetail(Model model, String roomId) {
-        log.info("roomId {}", roomId);
-        model.addAttribute("room", chatService.findRoomById(roomId));
-        return "chatroom";
-    }
+    // 재입장시 과거 메세지 가져오기?
+    // NoSQL 적용하면 그때 만들자
+//    @GetMapping("/chat/room/{roomId}")
+//    public BaseResponse<?> roomDetail(@PathVariable("roomId") String roomId) {
+//        log.info("roomId {}", roomId);
+//        ChatRoom room = chatService.findRoomById(roomId);
+//
+//        return responseService.getSuccessResponse("enter success", room);
+//    }
 }
