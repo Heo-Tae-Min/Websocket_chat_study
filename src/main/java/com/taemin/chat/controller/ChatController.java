@@ -1,8 +1,9 @@
 package com.taemin.chat.controller;
 
-import com.taemin.chat.dto.ChatDTO;
+import com.taemin.chat.domain.ChatDTO;
 import com.taemin.chat.dto.ChatEnterRequestDto;
-import com.taemin.chat.service.ChatService;
+import com.taemin.chat.dto.ChatSendRequestDto;
+import com.taemin.chat.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +14,10 @@ import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,7 +26,7 @@ public class ChatController {
     private final SimpMessageSendingOperations template;
 
     @Autowired
-    ChatService service;
+    ChatRoomService service;
 
     // MessageMapping을 통해 webSocket으로 들어오는 메시지를 발신 처리한다.
     // 이때 클라이언트에서는 /pub/chat/message로 요청하게 되고 이것을 controller가 받아서 처리한다.
@@ -40,16 +39,28 @@ public class ChatController {
         headerAccessor.getSessionAttributes().put("userID", chatEnterRequestDto.getUserId());
         headerAccessor.getSessionAttributes().put("roomId", chatEnterRequestDto.getRoomId());
 
-        ChatDTO chat = new ChatDTO();
-
-        chat.setMessage(chat.getSender() + " 님 입장!!");
-        template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
+//        ChatDTO chat = new ChatDTO();
+//        chat.setSender(chatEnterRequestDto.getUserId());
+//        chat.setType(ChatDTO.MessageType.ENTER);
+//
+//        Date date = new Date();
+//        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        chat.setTime(formatter.format(date));
+//        chat.setMessage(chatEnterRequestDto.getNickName() + " 님 입장!!");
+//
+//        template.convertAndSend("/sub/chat/room/" + chatEnterRequestDto.getRoomId(), chat);
     }
 
     @MessageMapping("/chat/sendMessage")
-    public void sendMessage(@Payload ChatDTO chat) {
+    public void sendMessage(@Payload ChatSendRequestDto chatSendRequestDto) {
+        ChatDTO chat = chatSendRequestDto.getChat();
         log.info("CHAT {}", chat);
-        chat.setMessage(chat.getMessage());
+        
+        // 전송 시간 설정
+        Date date = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        chat.setTime(formatter.format(date));
+
         template.convertAndSend("/sub/chat/room/" + chat.getRoomId(), chat);
     }
 
@@ -65,29 +76,5 @@ public class ChatController {
         String roomId = (String) headerAccessor.getSessionAttributes().get("roomId");
 
         log.info("headAccessor {}", headerAccessor);
-
-        // 채팅방 유저 리스트에서 UUID 유저 닉네임 조회 및 리스트에서 유저 삭제
-        String username = service.getUserName(roomId, userUUID);
-        service.delUser(roomId, userUUID);
-
-        if(username != null) {
-            log.info("User Disconnected : " + username);
-
-            // builder 어노테이션 활용
-            ChatDTO chat = ChatDTO.builder()
-                    .type(ChatDTO.MessageType.LEAVE)
-                    .sender(username)
-                    .message(username + " 님 퇴장!!")
-                    .build();
-
-            template.convertAndSend("/sub/chat/room/" + roomId, chat);
-        }
-    }
-
-    // 채팅에 참여한 유저 리스트 반환
-    @GetMapping("/chat/userlist")
-    @ResponseBody
-    public ArrayList<String> userList(String roomId) {
-        return service.getUserList(roomId);
     }
 }

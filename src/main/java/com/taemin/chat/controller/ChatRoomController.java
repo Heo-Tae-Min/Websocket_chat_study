@@ -1,24 +1,24 @@
 package com.taemin.chat.controller;
 
+import com.taemin.chat.domain.ChatRoom;
 import com.taemin.chat.dto.ChatCreateRequestDto;
 import com.taemin.chat.dto.ChatCreateResponseDto;
-import com.taemin.chat.dto.ChatRoom;
+import com.taemin.chat.dto.ChatGetIdRequestDto;
 import com.taemin.chat.global.common.response.BaseResponse;
 import com.taemin.chat.global.common.response.ResponseService;
-import com.taemin.chat.service.ChatService;
+import com.taemin.chat.service.ChatRoomService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.UUID;
 
 @RestController
 @Slf4j
 public class ChatRoomController {
     // ChatService Bean 가져오기
     @Autowired
-    private ChatService chatService;
+    private ChatRoomService chatRoomService;
 
     @Autowired
     private ResponseService responseService;
@@ -29,16 +29,21 @@ public class ChatRoomController {
     // 초대를 수락하면 -> 방 이동
     @PostMapping("/chat/createroom")
     public BaseResponse<?> createRoom(@RequestBody ChatCreateRequestDto chatCreateRequestDto) {
-        // 방 존재 여부 체크
-        
         // 방 생성
-        String roomId = chatService.createChatRoom(chatCreateRequestDto);
+        UUID roomId = chatRoomService.createChatRoom(chatCreateRequestDto);
         log.info("Create chat roomID {}", roomId);
 
         ChatCreateResponseDto response = new ChatCreateResponseDto();
         response.setRoomId(roomId);
 
         return responseService.getSuccessResponse("create success", response);
+    }
+
+    @GetMapping("/chat/findchatroom")
+    public BaseResponse<?> getChatRoomId(@RequestBody ChatGetIdRequestDto chatGetIdRequestDto) {
+        ChatRoom resultChatRoom = chatRoomService.getChatRoomId(chatGetIdRequestDto);
+        if(resultChatRoom == null) return responseService.getFailureResponse("Not Found");
+        return responseService.getSuccessResponse("find chatRoomId success", resultChatRoom.getId());
     }
 
     // 채팅방 입장 화면

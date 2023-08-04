@@ -1,15 +1,15 @@
 package com.taemin.chat.dto;
 
+import com.taemin.chat.domain.ChatDTO;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-public class ChatCreateResponseDto {
+public class ChatSendRequestDto {
 
     @NotNull
-    private UUID roomId;
+    private ChatDTO chat;
 }

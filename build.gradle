@@ -24,20 +24,40 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
-	// WebSocket
-	implementation 'org.springframework.boot:spring-boot-starter-websocket'
-
-	// sockjs
-	implementation 'org.webjars:sockjs-client:1.5.1'
-
-	// stomp
-	implementation 'org.webjars:stomp-websocket:2.3.4'
-
 	// gson
 	implementation 'com.google.code.gson:gson:2.9.0'
 
 	// validation
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+
+	// JPA
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	annotationProcessor("org.springframework.boot:spring-boot-starter-data-jpa")
+
+	// QueryDSL
+	implementation("com.querydsl:querydsl-jpa:5.0.0")
+
+	//STOMP 웹소캣 서버 사이드 테스트를 위한 의존성 추가
+	implementation("org.springframework.boot:spring-boot-starter-mustache")
+	implementation("org.springframework.boot:spring-boot-starter-websocket")
+
+	//STOMP 관련 프론트 라이브러리
+	// jQuery
+	implementation('org.webjars.bower:jquery:3.3.1')
+	// SockJS
+	implementation('org.webjars:sockjs-client:1.1.2')
+	// STROMP
+	implementation('org.webjars:stomp-websocket:2.3.3-1')
+
+	implementation('org.webjars:webjars-locator:0.30')
+
+	// MySQL
+	implementation("com.mysql:mysql-connector-j:8.0.33")
+	
+	// MongoDB
+	// MongoDB 단독 사용이면 뒤에 reactive 빼도 됨
+	// 다른 DB랑 같이 쓸려면 reactive 적어야 함
+	implementation ('org.springframework.boot:spring-boot-starter-data-mongodb-reactive')
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'

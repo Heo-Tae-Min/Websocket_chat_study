@@ -4,14 +4,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
-public class ChatEnterResponseDto {
-
+public class ChatGetIdResponseDto {
     @NotNull
-    private String roomId;
-
-    @NotNull
-    private String userId;
+    private UUID roomId;
 }

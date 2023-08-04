@@ -11,8 +11,8 @@ import java.util.UUID;
 public class ChatEnterRequestDto {
 
     @NotNull
-    private String roomId;
+    private UUID roomId;
 
     @NotNull
-    private String userId;
+    private UUID userId;
 }
